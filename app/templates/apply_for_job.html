@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Apply for Job | Job Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f6fc;
+            color: #2e3a59;
+            padding: 60px 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 500;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group { margin-bottom: 25px; }
+
+        label {
+            font-weight: bold;
+            font-size: 16px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #fafafa;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #3b82f6;
+            outline: none;
+        }
+
+        textarea {
+            height: 150px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background: #3b82f6;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        .submit-btn:hover { background: #2563eb; }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .form-footer a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .helper-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .success-message {
+            text-align: center;
+            background-color: #d1fae5;
+            color: #065f46;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 40px 15px; }
+            .container { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Apply for Job: <em>{{ job.title }}</em></h1>
+
+        {% if success %}
+        <div class="success-message" style="display:block;">
+            ✅ Your application has been submitted successfully!
+        </div>
+        {% endif %}
+
+        <form action="{{ url_for('main.apply_for_job', job_id=job.id) }}" method="POST" id="job-application-form">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" name="name" id="name" required
+                       placeholder="Enter your full name"
+                       value="{{ session.get('full_name', '') }}"  
+                       pattern="[A-Za-z\s]+" 
+                       title="Name should only contain letters" />
+                <div class="helper-text">Please provide your full legal name.</div>
+            </div>
+            
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" name="phone" id="phone" required
+                       placeholder="e.g., +1 234 567 8900"
+                       pattern="\+?\d{1,4}[\s-]?\d{1,4}[\s-]?\d{4}"
+                       value="{{ session['phone'] if 'phone' in session else '' }}"
+                       title="Phone number should be in the format: +1 234 567 8900" />
+                <div class="helper-text">We’ll contact you via this number.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" name="email" id="email" required
+                       placeholder="e.g., example@domain.com"
+                       value="{{ session.get('email', '') }}" />
+                <div class="helper-text">We’ll send application updates to this email.</div>
+            </div>
+            
+
+            <div class="form-group">
+                <label for="cover_letter">Cover Letter</label>
+                <textarea name="cover_letter" id="cover_letter" required placeholder="Why are you a good fit for this job?"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="resume_link">Resume Link</label>
+                <input type="url" name="resume_link" id="resume_link" required placeholder="Paste your resume link (can be any link)" />
+                <div class="helper-text">Ensure the link is accessible by anyone.</div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submit-button">Submit Application</button>
+        </form>
+
+        <div class="form-footer">
+            <p>Already applied? <a href="{{ url_for('main.my_applications') }}">View your applications</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('job-application-form').addEventListener('submit', function (event) {
+            const button = document.getElementById('submit-button');
+            button.disabled = true;
+            button.textContent = "Submitting...";
+    
+            // Removed the validation for Google Drive link, allowing any URL
+            const resumeLink = document.getElementById('resume_link');
+            if (!resumeLink.value) {
+                alert("Please provide a valid resume link.");
+                button.disabled = false;
+                button.textContent = "Submit Application";
+                event.preventDefault();
+            }
+        });
+    </script>
+
+</body>
+</html>

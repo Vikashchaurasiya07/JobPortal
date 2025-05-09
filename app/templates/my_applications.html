@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Applications</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+
+        .form-container {
+            max-width: 900px;
+            margin: 30px auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .applications-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .application-card {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .application-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .application-card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .application-card p {
+            font-size: 16px;
+            margin: 8px 0;
+            color: #555;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+
+        .status.pending {
+            background-color: #fbc02d;
+            color: #fff;
+        }
+
+        .status.approved {
+            background-color: #4caf50;
+            color: #fff;
+        }
+
+        .status.rejected {
+            background-color: #f44336;
+            color: #fff;
+        }
+
+        .application-card .rejection-reason {
+            background-color: #f0f0f0;
+            padding: 12px;
+            border-radius: 8px;
+            font-style: italic;
+            color: #d32f2f;
+            margin-top: 10px;
+        }
+
+        .helper-text {
+            color: #777;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .application-card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>My Job Applications</h1>
+
+        {% if applications %}
+            <div class="applications-list">
+                {% for application in applications %}
+                    <div class="application-card">
+                        <h3>{{ application.job.title }}</h3>
+                        <p><strong>Location:</strong> {{ application.job.location }}</p>
+                        <p><strong>Applied On:</strong> {{ application.applied_on.strftime('%B %d, %Y') }}</p>
+                        <p><strong>Status:</strong> 
+                            <span class="status {{ application.status|lower }}">{{ application.status }}</span>
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="helper-text">No applications found. Apply to jobs to see them here!</p>
+        {% endif %}
+    </div>
+</body>
+</html>

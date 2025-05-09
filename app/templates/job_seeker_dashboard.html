@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Job Seeker Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f6fc;
+            color: #2e3a59;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: #1f2937;
+            padding: 20px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .sidebar-header {
+            margin-bottom: 40px;
+        }
+
+        .sidebar-header h2 {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-weight: 300;
+            color: #9ca3af;
+        }
+
+        .sidebar nav ul {
+            list-style-type: none;
+        }
+
+        .sidebar nav ul li {
+            margin: 15px 0;
+        }
+
+        .sidebar nav ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            background: #374151;
+            border-radius: 8px;
+            display: block;
+            transition: background 0.3s;
+        }
+
+        .sidebar nav ul li a:hover {
+            background: #4b5563;
+        }
+
+        .logout {
+            background: #ef4444;
+            text-align: center;
+        }
+
+        .logout:hover {
+            background: #dc2626;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .main-content h1 {
+            margin-bottom: 20px;
+        }
+
+        .job-section {
+            margin-bottom: 40px;
+        }
+
+        .job-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .job-card:hover {
+            transform: scale(1.02);
+        }
+
+        .job-card h2 {
+            margin-bottom: 10px;
+        }
+
+        .job-card p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .apply-btn {
+            background: #3b82f6;
+            border: none;
+            padding: 8px 12px;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .apply-btn:hover {
+            background: #2563eb;
+        }
+
+        .no-data {
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div>
+            <div class="sidebar-header">
+                <h2>Job Seeker Panel</h2>
+                <p>Welcome, <strong>{{ username }}</strong></p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('main.job_seeker_dashboard') }}">📄 View Jobs</a></li>
+                    <li><a href="{{ url_for('main.my_applications') }}">📑 My Applications</a></li>
+                </ul>
+            </nav>
+        </div>
+        <a href="{{ url_for('main.logout') }}" class="logout">🚪 Logout</a>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1>Job Listings</h1>
+
+        <!-- Job Listings -->
+        <section class="job-section">
+            <h2>Available Jobs</h2>
+            {% if jobs %}
+                {% for job in jobs %}
+                    <div class="job-card">
+                        <h2>{{ job.title }}</h2>
+                        <p><strong>Location:</strong> {{ job.location }}</p>
+                        <p><strong>Salary:</strong> {{ job.salary or 'Not specified' }}</p>
+                        <p>{{ job.description[:150] }}...</p>
+
+                        <a href="{{ url_for('main.apply_for_job', job_id=job.id) }}" class="apply-btn">📝 Apply</a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="no-data">No jobs available right now.</p>
+            {% endif %}
+        </section>
+    </main>
+</div>
+</body>
+</html>

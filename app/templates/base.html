@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{% block title %}Job Portal{% endblock %}</title>
+
+    <!-- Tailwind CSS for modern UI (optional, but highly recommended) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Your custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body class="bg-slate-900 text-white font-sans min-h-screen {% if request.path.startswith('/dashboard') %}dashboard-body{% endif %}">
+
+    {% if not request.path.startswith('/dashboard') %}
+    <nav class="flex justify-between items-center px-6 py-4 bg-slate-800 shadow-md">
+        <div class="logo text-xl font-bold text-cyan-400">💼 JobPortal</div>
+        {% if request.path == '/' %}
+        <div class="nav-links space-x-4">
+            <a href="{{ url_for('main.login') }}" class="bg-cyan-500 hover:bg-cyan-600 text-white py-2 px-4 rounded">Login</a>
+            <a href="{{ url_for('main.register') }}" class="bg-gray-700 hover:bg-gray-800 text-white py-2 px-4 rounded">Register</a>
+        </div>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    <div class="{% if request.path.startswith('/dashboard') %}dashboard-container{% else %}container mx-auto p-4{% endif %}">
+        {% block content %}{% endblock %}
+    </div>
+
+    {% if not request.path.startswith('/dashboard') %} 
+    {% endif %}
+</body>
+</html>

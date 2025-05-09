@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Applications | Job Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f6fc;
+            color: #2e3a59;
+            padding: 40px;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+        }
+
+        .application-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .application-card:hover {
+            transform: scale(1.02);
+        }
+
+        .application-card h2 {
+            margin-bottom: 10px;
+        }
+
+        .application-card p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .resume-link {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .no-applications {
+            color: #9ca3af;
+            font-size: 16px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            background: #3b82f6;
+            color: white;
+            padding: 10px 18px;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #2563eb;
+        }
+
+        .action-btns {
+            margin-top: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: none;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .accept-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .reject-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .accept-btn:hover {
+            background-color: #45a049;
+        }
+
+        .reject-btn:hover {
+            background-color: #e53935;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+
+        .status-rejected {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .status-accepted {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .status-pending {
+            background-color: #ff9800;
+            color: white;
+        }
+
+    </style>
+</head>
+<body>
+
+<a href="{{ url_for('main.employer_dashboard') }}" class="back-btn">← Back to Dashboard</a>
+
+<h1>Applications for: <em>{{ job.title }}</em></h1>
+
+{% if applications %}
+    {% for app in applications %}
+        <div class="application-card">
+            <h2>{{ app.name }}</h2>
+            <p><strong>Email:</strong> {{ app.email }}</p>
+            <p><strong>Phone:</strong> {{ app.phone }}</p>
+            <p><strong>Cover Letter:</strong> {{ app.cover_letter }}</p>
+            <p><strong>Resume:</strong> <a href="{{ app.resume_link }}" target="_blank" class="resume-link">View Resume</a></p>
+            <p><strong>Submitted on:</strong> {{ app.applied_on.strftime('%d %b %Y, %I:%M %p') }}</p>
+
+            <!-- Application Status -->
+            <p><strong>Status:</strong>
+                <span class="status-badge {% if app.status == 'Rejected' %}status-rejected{% elif app.status == 'Accepted' %}status-accepted{% else %}status-pending{% endif %}">
+                    {{ app.status }}
+                </span>
+            </p>
+
+            <!-- Accept/Reject buttons -->
+            {% if app.status == 'Pending' %}
+                <div class="action-btns">
+                    <form action="{{ url_for('main.update_application_status', application_id=app.id, action='accept') }}" method="POST" style="display:inline;">
+                        <button type="submit" class="action-btn accept-btn">Accept</button>
+                    </form>
+                    <form action="{{ url_for('main.update_application_status', application_id=app.id, action='reject') }}" method="POST" style="display:inline;">
+                        <button type="submit" class="action-btn reject-btn">Reject</button>
+                    </form>
+                </div>
+            {% else %}
+                <!-- Disable actions if the application is already accepted or rejected -->
+                <button class="action-btn" disabled>Already {{ app.status }}</button>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% else %}
+    <p class="no-applications">No applications received for this job yet.</p>
+{% endif %}
+
+</body>
+</html>

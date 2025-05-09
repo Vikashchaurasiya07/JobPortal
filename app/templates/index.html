@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Job Portal - Launch Your Career{% endblock %}
+
+{% block content %}
+  <!-- Full-Screen Container with Flex Layout -->
+  <div class="container">
+    <!-- Text Section on the Left -->
+    <div class="text-section">
+        <h1>Launch Your Career with <span class="highlight">Job Portal</span></h1>
+        <p class="description">A job portal web application by <strong>Vikash Kumar Chaurasiya</strong>. Find your dream job or the perfect candidate now.</p>
+
+        <!-- Get Started Button -->
+        <div class="cta-card">
+          <a href="{{ url_for('main.register') }}">
+            <button class="cta-button">Get Started</button>
+          </a>          
+        </div>
+    </div>
+
+    <!-- Image Section on the Right -->
+    <div class="image-section">
+      <img src="{{ url_for('static', filename='images/landingpage.jpg') }}" alt="Dev illustration">
+    </div>
+  </div>
+{% endblock %}
