@@ -23,7 +23,7 @@ class Job(db.Model):
 class Application(db.Model):
     __tablename__ = 'applications'
     id = db.Column(db.Integer, primary_key=True)
-    job_id = db.Column(db.Integer, db.ForeignKey('job.id'), nullable=False)
+    job_id = db.Column(db.Integer, db.ForeignKey('job.id', ondelete='CASCADE'), nullable=False)  # Added ondelete='CASCADE'
     name = db.Column(db.String(80), nullable=False)  # Name of the applicant
     email = db.Column(db.String(120), nullable=False)  # Email of the applicant
     phone = db.Column(db.String(20))
@@ -33,4 +33,5 @@ class Application(db.Model):
     applied_on = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Define relationships
-    job = db.relationship('Job', backref='applications')
+    job = db.relationship('Job', backref='applications', cascade="all, delete")  # Ensures deletion of related applications
+

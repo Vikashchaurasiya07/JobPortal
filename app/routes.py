@@ -61,7 +61,7 @@ def login():
             elif user.role == 'job_seeker':
                 return redirect(url_for('main.job_seeker_dashboard'))
             elif user.role == 'admin':
-                return redirect(url_for('main.home'))
+                return redirect(url_for('main.admin_dashboard'))
 
         flash("Invalid credentials. Please try again.", 'error')
     return render_template('login.html')
@@ -74,14 +74,10 @@ def employer_dashboard():
         return redirect(url_for('main.login'))
 
     employer_email = session['email']
-    employer = User.query.filter_by(email=employer_email).first()  # Get the employer by email
-    if employer:
-        jobs = Job.query.filter_by(employer_id=employer.id).all()  # Filter jobs by employer_id
-    else:
-        jobs = []
+    employer = User.query.filter_by(email=employer_email).first()
+    jobs = Job.query.filter_by(employer_id=employer.id) if employer else []
 
     return render_template('employer_dashboard.html', jobs=jobs, username=session['username'])
-
 
 
 # ---------------- Post a Job ----------------
@@ -95,30 +91,43 @@ def post_job():
         description = request.form['description']
         location = request.form['location']
         salary = request.form['salary']
-        employer_email = session['email']  # Get employer's email from session
+        employer_email = session['email']
 
-        new_job = Job(title=title, description=description, location=location, salary=salary, employer_email=employer_email)
-        db.session.add(new_job)
-        db.session.commit()
-        flash('Job posted successfully!', 'success')
-        return redirect(url_for('main.employer_dashboard'))
+        # Find the employer by email to get the employer's ID
+        employer = User.query.filter_by(email=employer_email).first()
+
+        if employer:
+            new_job = Job(title=title, description=description, location=location, salary=salary, employer_id=employer.id)
+            db.session.add(new_job)
+            db.session.commit()
+            flash('Job posted successfully!', 'success')
+            return redirect(url_for('main.employer_dashboard'))
+        else:
+            flash('Employer not found.', 'error')
 
     return render_template('post_job.html')
 
 
 # ---------------- Delete Job ----------------
-@main.route('/employer/delete/<int:job_id>', methods=['POST'])
+@main.route('/delete_job/<int:job_id>', methods=['POST'])
 def delete_job(job_id):
-    if session.get('role') != 'employer':
+    if session.get('role') not in ['employer', 'admin']:
         return redirect(url_for('main.login'))
 
     job = Job.query.get_or_404(job_id)
-    if job.employer_email == session['email']:  # Compare with employer's email in session
+    employer = User.query.filter_by(email=session.get('email')).first()
+
+    if employer and (session['role'] == 'admin' or job.employer_id == employer.id):
         db.session.delete(job)
         db.session.commit()
         flash('Job deleted successfully!', 'success')
+    else:
+        flash('You are not authorized to delete this job.', 'error')
 
-    return redirect(url_for('main.employer_dashboard'))
+    if session['role'] == 'admin':
+        return redirect(url_for('main.manage_jobs'))
+    elif session['role'] == 'employer':
+        return redirect(url_for('main.employer_dashboard'))
 
 
 # ---------------- Apply to Job (Job Seeker) ----------------
@@ -131,7 +140,7 @@ def apply_for_job(job_id):
 
     if request.method == 'POST':
         name = request.form.get('name')
-        email = session.get('email')  # Get the email from session
+        email = session.get('email')
         phone = request.form.get('phone')
         cover_letter = request.form.get('cover_letter')
         resume_link = request.form.get('resume_link')
@@ -144,7 +153,7 @@ def apply_for_job(job_id):
             cover_letter=cover_letter,
             resume_link=resume_link
         )
-        
+
         db.session.add(application)
         db.session.commit()
 
@@ -164,7 +173,6 @@ def view_applications(job_id):
     applications = Application.query.filter_by(job_id=job_id).all()
 
     if request.method == 'POST':
-        # Handle Accept or Reject actions
         application_id = request.form.get('application_id')
         action = request.form.get('action')
 
@@ -175,7 +183,7 @@ def view_applications(job_id):
         elif action == 'reject':
             application.status = 'Rejected'
             rejection_reason = request.form.get('rejection_reason')
-            application.rejection_reason = rejection_reason  # Store the reason for rejection
+            application.rejection_reason = rejection_reason
 
         try:
             db.session.commit()
@@ -187,41 +195,6 @@ def view_applications(job_id):
         return redirect(url_for('main.view_applications', job_id=job_id))
 
     return render_template('view_applications.html', job=job, applications=applications)
-
-# ---------------- Application Status Update (Accept/Reject) ----------------
-@main.route('/employer/application/update', methods=['POST'])
-def update_application_status():
-    if session.get('role') != 'employer':
-        return redirect(url_for('main.login'))
-
-    application_id = request.args.get('application_id')  # Get application_id from URL query parameter
-    action = request.args.get('action')  # Get the action (e.g., 'reject', 'accept')
-
-    if not application_id or not action:
-        flash('Invalid request.', 'error')
-        return redirect(url_for('main.employer_dashboard'))
-
-    application = Application.query.get_or_404(application_id)  # Get the application by ID
-
-    # Validate the action and update the application status
-    if action == 'reject':
-        application.status = 'Rejected'
-        flash('Application rejected successfully!', 'success')
-    elif action == 'accept':
-        application.status = 'Accepted'
-        flash('Application accepted successfully!', 'success')
-    else:
-        flash('Invalid action.', 'error')
-
-    try:
-        db.session.commit()  # Commit the changes to the database
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Error updating application: {str(e)}', 'error')
-
-    return redirect(url_for('main.view_applications', job_id=application.job_id))  # Redirect to the job's application page
-
-
 
 
 # ---------------- Job Seeker Dashboard ----------------
@@ -241,8 +214,152 @@ def my_applications():
         flash("Please log in to view your applications.")
         return redirect(url_for('main.login'))
 
-    applications = Application.query.filter_by(email=session['email']).all()  # Filter by email from session
+    applications = Application.query.filter_by(email=session['email']).all()
     return render_template('my_applications.html', applications=applications)
+
+
+# ---------------- Admin Dashboard ----------------
+@main.route('/admin/dashboard')
+def admin_dashboard():
+    total_users = User.query.count()
+    total_jobs = Job.query.count()
+    pending_applications = Application.query.filter_by(status='Pending').count()
+    return render_template('admin_dashboard.html',
+                           total_users=total_users,
+                           total_jobs=total_jobs,
+                           pending_applications=pending_applications)
+
+
+# ---------------- Manage Users ----------------
+@main.route('/admin/manage_users')
+def manage_users():
+    users = User.query.all()
+    return render_template('manage_users.html', users=users)
+
+
+# ---------------- Manage Jobs ----------------
+@main.route('/admin/manage_jobs', methods=['GET', 'POST'])
+def manage_jobs():
+    if session.get('role') != 'admin':
+        return redirect(url_for('main.login'))
+
+    jobs = Job.query.all()
+
+    if request.method == 'POST':
+        job_id = request.form.get('job_id')
+        action = request.form.get('action')
+
+        job = Job.query.get_or_404(job_id)
+
+        if action == 'delete':
+            db.session.delete(job)
+            db.session.commit()
+            flash('Job deleted successfully!', 'success')
+
+        elif action == 'update':
+            job.title = request.form.get('title', job.title)
+            job.description = request.form.get('description', job.description)
+            job.location = request.form.get('location', job.location)
+            job.salary = request.form.get('salary', job.salary)
+
+            db.session.commit()
+            flash('Job updated successfully!', 'success')
+
+    return render_template('manage_jobs.html', jobs=jobs)
+
+
+# ---------------- Add User ----------------
+@main.route('/add_user', methods=['POST'])
+def add_user():
+    username = request.form.get('username')
+    email = request.form.get('email')
+    password = request.form.get('password')
+    role = request.form.get('role')
+
+    if password:
+        password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+    else:
+        flash("Password is required!")
+        return redirect(url_for('main.manage_users'))
+
+    new_user = User(username=username, email=email, password=password_hash, role=role)
+
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+        flash("User added successfully!", 'success')
+        return redirect(url_for('main.manage_users'))
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error adding user: {e}", 'error')
+        return redirect(url_for('main.manage_users'))
+
+
+# ---------------- Delete User ----------------
+@main.route('/delete_user/<int:user_id>', methods=['GET'])
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    flash('User deleted successfully!', 'success')
+    return redirect(url_for('main.manage_users'))
+
+
+# ---------------- View Applications (Admin) ----------------
+@main.route('/admin/applications', methods=['GET', 'POST'])
+def admin_view_applications():
+    if session.get('role') != 'admin':
+        return redirect(url_for('main.login'))
+
+    applications = Application.query.all()
+
+    if request.method == 'POST':
+        application_id = request.form.get('application_id')
+        action = request.form.get('action')
+
+        application = Application.query.get_or_404(application_id)
+
+        if action == 'accept':
+            application.status = 'Accepted'
+        elif action == 'reject':
+            application.status = 'Rejected'
+            rejection_reason = request.form.get('rejection_reason')
+            application.rejection_reason = rejection_reason
+
+        try:
+            db.session.commit()
+            flash(f'Application {action.capitalize()}ed successfully!', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating application: {str(e)}', 'error')
+
+        return redirect(url_for('main.admin_view_applications'))
+
+    return render_template('admin_view_applications.html', applications=applications)
+
+
+@main.route('/admin/application/<int:application_id>/update/<action>', methods=['POST'])
+def admin_update_application_status(application_id, action):
+    if session.get('role') != 'admin':
+        return redirect(url_for('main.login'))
+
+    application = Application.query.get_or_404(application_id)
+
+    if action == 'accept':
+        application.status = 'Accepted'
+    elif action == 'reject':
+        application.status = 'Rejected'
+        rejection_reason = request.form.get('rejection_reason')
+        application.rejection_reason = rejection_reason
+
+    try:
+        db.session.commit()
+        flash(f'Application {action.capitalize()}ed successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating application: {str(e)}', 'error')
+
+    return redirect(url_for('main.admin_view_applications'))
 
 
 # ---------------- Logout ----------------
