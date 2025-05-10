@@ -2,6 +2,11 @@
 
 This is a Job Portal web application built using Flask, SQLite, HTML, CSS, and Bootstrap. It supports multiple user roles: Job Seekers, Employers, and Admins. The platform allows job seekers to register, search jobs, and apply, while employers can post jobs and manage job listings. Admins have the ability to manage users and jobs.
 
+## Live Demo
+
+You can access the live demo of the application here: [Job Portal Demo](https://jobportal-6lu5.onrender.com)
+
+
 ## Features
 
 - **Job Seekers**
