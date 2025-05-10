@@ -7,3 +7,4 @@ email-validator
 WTForms
 gunicorn
 python-dotenv
+flask_bcrypt
