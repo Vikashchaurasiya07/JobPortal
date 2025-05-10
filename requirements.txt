@@ -6,3 +6,4 @@ Flask-WTF
 email-validator
 WTForms
 gunicorn
+python-dotenv
