@@ -65,10 +65,14 @@ This is a Job Portal web application built using Flask, SQLite, HTML, CSS, and B
 
 Add your screenshots in the `screenshots/` folder, and refer to them here:
 
-![Landing page](![image](https://github.com/user-attachments/assets/499b937b-b23f-4ddd-9698-f4c9dea8ce31))
+![Landing page]![image](https://github.com/user-attachments/assets/d3d57227-364d-460c-b18f-c3c072910e97)
 
-![Job Seekers](screenshots/job_seekers.png)
-![Admin Panel](screenshots/admin_panel.png)
+![Job Seekers]![image](https://github.com/user-attachments/assets/1c2b3d23-a1cb-4e72-9864-6d5a9e51c0fb)
+
+![Employer_panel]![image](https://github.com/user-attachments/assets/28c74c7f-72e6-4e88-9cbb-af6f0a246eaf)
+
+![Admin Panel](![image](https://github.com/user-attachments/assets/6f279bf7-658e-42c8-a84c-471410c9b540)
+)
 
 ## License
 
