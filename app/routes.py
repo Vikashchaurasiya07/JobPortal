@@ -361,6 +361,31 @@ def admin_update_application_status(application_id, action):
 
     return redirect(url_for('main.admin_view_applications'))
 
+# ---------------- Update Application Status (Employer) ----------------
+@main.route('/application/<int:application_id>/update/<string:action>', methods=['POST'])
+def update_application_status(application_id, action):
+    if session.get('role') != 'employer':
+        return redirect(url_for('main.login'))
+
+    application = Application.query.get_or_404(application_id)
+
+    if action == 'accept':
+        application.status = 'Accepted'
+    elif action == 'reject':
+        application.status = 'Rejected'
+        rejection_reason = request.form.get('rejection_reason')
+        application.rejection_reason = rejection_reason
+
+    try:
+        db.session.commit()
+        flash(f'Application {action.capitalize()}ed successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating application: {str(e)}', 'error')
+
+    return redirect(request.referrer or url_for('main.employer_dashboard'))
+
+
 
 # ---------------- Logout ----------------
 @main.route('/logout')
