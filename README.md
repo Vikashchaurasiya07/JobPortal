@@ -72,7 +72,6 @@ Add your screenshots in the `screenshots/` folder, and refer to them here:
 ![Employer_panel]![image](https://github.com/user-attachments/assets/28c74c7f-72e6-4e88-9cbb-af6f0a246eaf)
 
 ![Admin Panel](![image](https://github.com/user-attachments/assets/6f279bf7-658e-42c8-a84c-471410c9b540)
-)
 
 ## License
 
